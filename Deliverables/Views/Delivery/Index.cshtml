@@ -1,0 +1,351 @@
+﻿@using Deliverables.Models
+@model IEnumerable<DeliveryModel>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <link rel="shortcut icon" href="#" />
+    <meta name="viewport" content="width=device-width" />
+    <title>Index</title>
+    <style type="text/css">
+        body {
+            font-family: Arial;
+            font-size: 10pt;
+        }
+
+        .table {
+            border: 1px solid #ccc;
+            border-collapse: collapse;
+        }
+
+            .table th {
+                background-color: #F7F7F7;
+                color: #333;
+                font-weight: bold;
+            }
+
+            .table th, .table td {
+                padding: 5px;
+                border: 1px solid #ccc;
+            }
+    </style>
+</head>
+<body>
+
+    <table border="0" cellpadding="0" cellspacing="0">
+        <tr>
+            <td style="width: 150px">
+                IDNumber:<br />
+                <input type="text" id="txtIdNo" style="width:140px" />
+            </td>
+            <td style="width: 150px">
+                FirstName:<br />
+                <input type="text" id="txtFname" style="width:140px" />
+            </td>
+            <td style="width: 150px">
+                Surname:<br />
+                <input type="text" id="txtSname" style="width:140px" />
+            </td>
+           
+            <td style="width: 200px">
+                <br />
+                <input type="button" id="btnAdd" value="Add" />
+            </td>
+        </tr>
+    </table>
+   <table>
+       <tr>
+           <th>
+               
+           </th>
+       </tr>
+   </table>
+
+    <table id="tblDeliveryTbl" class="table" cellpadding="0" cellspacing="0">
+        <tr>
+            <th style="width:150px">IDNumber</th>
+            <th style="width:150px">FirstName</th>
+            <th style="width:150px">Surname</th>
+            <th style="width:150px">DateofBirth</th>
+            <th style="width:150px">Age</th>
+            <th style="width:150px">Gender</th>
+            <th style="width:150px"></th>
+        </tr>
+        @foreach (DeliveryModel delivery in Model)
+        {
+            <tr>
+                <td class="IDNumber">
+                    <span>@delivery.IDNumber</span>
+                    <input type="text" value="@delivery.IDNumber" style="display:none" />
+                </td>
+                <td class="FirstName">
+                    <span>@delivery.FirstName</span>
+                    <input type="text" value="@delivery.FirstName" style="display:none" />
+                </td>
+                <td class="Surname">
+                    <span>@delivery.Surname</span>
+                    <input type="text" value="@delivery.Surname" style="display:none" />
+                </td>
+              
+                <td class="DateofBirth">
+                    <span>@delivery.DOB</span>
+                    <input type="text" value="@delivery.DOB" style="display:none" />
+                </td>
+                <td class="Age">
+                    <span>@delivery.Age</span>
+                    <input type="text" value="@delivery.Age" style="display:none" />
+                </td>
+                <td class="Gender">
+                    <span>@delivery.Gender</span>
+                    <input type="text" value="@delivery.Gender" style="display:none" />
+                </td>
+
+                <td>
+                    <a class="Edit" href="javascript:;">Edit</a>
+                    <a class="Update" href="javascript:;" style="display:none">Update</a>
+                    <a class="Cancel" href="javascript:;" style="display:none">Cancel</a>
+                    <a class="Delete" href="javascript:;">Delete</a>
+                </td>
+            </tr>
+        }
+    </table>
+
+
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+    <script type="text/javascript" src="http://ajax.cdnjs.com/ajax/libs/json2/20110223/json2.js"></script>
+    <script type="text/javascript">
+      
+
+        function AppendRow(row,IDNumber, FirstName, Surname,DOB, Age, Gender) {
+            
+            $(".IDNumber", row).find("span").html(IDNumber);
+            $(".IDNumber", row).find("input").val(IDNumber);
+
+            
+            $(".FirstName", row).find("span").html(FirstName);
+            $(".FirstName", row).find("input").val(FirstName);
+
+           
+            $(".Surname", row).find("span").html(Surname);
+            $(".Surname", row).find("input").val(Surname);
+
+            
+            $(".DOB", row).find("span").html(DOB);
+            $(".DOB", row).find("input").val(DOB);
+
+           
+            $(".Age", row).find("span").html(Age);
+            $(".Age", row).find("input").val(Age);
+
+          
+            $(".Gender", row).find("span").html(Gender);
+            $(".Gender", row).find("input").val(Gender);
+
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+
+            $("#tblDeliveryTbl").append(row);
+        };
+
+        
+        $("body").on("click", "#btnAdd", function () {
+            var txtFname = $("#txtFname");
+            var txtSname = $("#txtSname");
+            var txtIdNo = $("#txtIdNo");
+            $.ajax({
+                type: 'POST',
+                url: '/Delivery/InsertDelivery',
+                data: { FirstName: $("#txtFname").val(), Surname: $("#txtSname").val(), IDNumber: $("#txtIdNo").val() },
+                dataType: 'json',
+                success: function (r) {
+                    var row = $("#tblDeliveryTbl tr:last-child");
+                    if ($("#tblDeliveryTbl tr:last-child span").eq(0).html() != "&nbsp;") {
+                        row = row.clone();
+                    }
+
+                    function Validate() {
+
+                        $('#error p').remove();
+
+                       
+                        var error = $('#error');
+
+                        var IdNo = $('#txtIdNo').val();
+
+
+                      
+                        var correct = true;
+
+
+                        
+                        if (IdNo.length != 13 || !isNumber(IdNo)) {
+                            error.append('<p>ID number does not appear to be authentic - input not a valid number</p>');
+                            correct = false;
+                        }
+
+                       
+                        var tempDate = new Date(IdNo.substring(0, 2), IdNo.substring(2, 4) - 1, IdNo.substring(4, 6));
+
+                        var id_date = tempDate.getDate();
+                        var id_month = tempDate.getMonth();
+                        var id_year = tempDate.getFullYear();
+
+                        var fullDate = id_year + "-" + (id_month + 1) + "-" + id_date;
+
+                        if (!((tempDate.getYear() == IdNo.substring(0, 2)) && (id_month == IdNo.substring(2, 4) - 1) && (id_date == IdNo.substring(4, 6)))) {
+                            error.append('<p>ID number does not appear to be authentic - date part not valid</p>');
+                            correct = false;
+                        }
+                        var Age = @DateTime.Now.Year - id_year;
+                       
+
+                        var genderCode = IdNo.substring(6, 10);
+                        var gender = parseInt(genderCode) < 5000 ? "F" : "M";
+                        if (gender = "F" && Age > 50)
+                        {
+                            gender = "50F"
+                        }
+                        else {
+                            gender = gender;
+                        }
+
+                        if (gender = "M" && Age < 50)
+                        {
+                            gender = "50m"
+                        }
+                        else {
+                            gender = gender;
+                        }
+
+                        var DOB = fullDate;                   
+
+
+                        
+                        if (correct) {
+                            error.css('display', 'none');
+
+                            
+                            $('#result').empty();
+
+                        }
+                            
+                        else {
+                            error.css('display', 'block');
+                        }
+
+                        return false;
+                    }
+
+                    function isNumber(n) {
+                        return !isNaN(parseFloat(n)) && isFinite(n);
+                    }
+
+                    $('#idCheck').submit(Validate);
+
+
+
+                    AppendRow(row, r.IdNo, r.Fname, r.Sname, r.DOB);
+                    txtIdNo.val("");
+                    txtFname.val("");
+                    txtSname.val("");
+
+                }
+            });
+        });
+
+        
+        $("body").on("click", "#tblDeliveryTbl .Edit", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find("input").length > 0) {
+                    $(this).find("input").show();
+                    $(this).find("input").show();
+                    $(this).find("span").hide();
+                }
+            });
+            row.find(".Update").show();
+            row.find(".Cancel").show();
+            row.find(".Delete").hide();
+            $(this).hide();
+        });
+
+       
+        $("body").on("click", "#tblDeliveryTbl .Update", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find("input").length > 0) {
+                    var span = $(this).find("span");
+                    var input = $(this).find("input");
+                    span.html(input.val());
+                    span.show();
+                    input.hide();
+                }
+            });
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+            row.find(".Cancel").hide();
+            $(this).hide();
+
+            var delivery = {};
+            delivery.id = row.find(".id").find("span").html();
+            delivery.Fname = row.find(".FirstName").find("span").html();
+            delivery.Sname = row.find(".Surname").find("span").html();
+            delivery.IdNo = row.find(".IDNumber").find("span").html();
+            $.ajax({
+                type: "POST",
+                url: "/Delivery/UpdateDelivery",
+                data: '{delivery:' + JSON.stringify(delivery) + '}',
+                contentType: "application/json; charset=utf-8",
+                dataType: "json"
+            });
+        });
+
+       
+        $("body").on("click", "#tblDelivery .Cancel", function () {
+            var row = $(this).closest("tr");
+            $("td", row).each(function () {
+                if ($(this).find("input").length > 0) {
+                    var span = $(this).find("span");
+                    var input = $(this).find("input");
+                    input.val(span.html());
+                    span.show();
+                    input.hide();
+                }
+            });
+            row.find(".Edit").show();
+            row.find(".Delete").show();
+            row.find(".Update").hide();
+            $(this).hide();
+        });
+
+        
+        $("body").on("click", "#tblDeliverTbl .Delete", function () {
+            if (confirm("Do you want to delete this row?")) {
+                var row = $(this).closest("tr");
+                var id = row.find("span").html();
+                $.ajax({
+                    type: "POST",
+                    url: "/Delivery/DeleteDelivery",
+                    data: '{id: ' + id + '}',
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (response) {
+                        if ($("#tblDeliveryTbl tr").length > 2) {
+                            row.remove();
+                        } else {
+                            row.find(".Edit").hide();
+                            row.find(".Delete").hide();
+                            row.find("span").html('&nbsp;');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
